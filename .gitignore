@@ -1,0 +1,22 @@
+# General
+.env
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Python
+venv/
+
+# Frontend
+/build
+/dist
+/.pnp
+.pnp.js
+
+# Logs
+*.log
+
+# Editor configs
+.idea/
+.vscode/
