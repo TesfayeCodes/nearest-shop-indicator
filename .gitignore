@@ -20,3 +20,8 @@ venv/
 # Editor configs
 .idea/
 .vscode/
+
+*.db
+*.pyc
+__pycache__/
+.env
