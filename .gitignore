@@ -16,6 +16,7 @@ venv/
 
 # Logs
 *.log
+frontend/.next/
 
 # Editor configs
 .idea/
