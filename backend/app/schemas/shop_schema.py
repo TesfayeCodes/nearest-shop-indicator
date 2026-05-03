@@ -10,6 +10,7 @@ class ShopBase(BaseModel):
     longitude: float
     address: Optional[str] = None
     shop_type: Optional[str] = None
+    category: Optional[str] = None
     is_open: bool = True
 
 

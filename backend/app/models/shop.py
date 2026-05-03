@@ -13,6 +13,7 @@ class Shop(Base):
     longitude = Column(Float, nullable=False)
     address = Column(String(500), nullable=True)
     shop_type = Column(String(100), nullable=True)
+    category = Column(String(100), nullable=True)
     is_open = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(

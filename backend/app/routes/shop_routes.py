@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.core.db import get_db
-from app.services.shop_service import find_nearest_shops, create_shop
+from app.services.shop_service import find_nearest_shops, create_shop, get_all_shops
 from app.schemas.shop_schema import ShopResponse, NearestShopsResponse
 
 router = APIRouter(prefix="/shops", tags=["shops"])
@@ -44,6 +44,7 @@ def create_new_shop(
     description: str | None = Query(None, max_length=500),
     address: str | None = Query(None, max_length=500),
     shop_type: str | None = Query(None, max_length=100),
+    category: str | None = Query(None, max_length=100),
     is_open: bool = Query(True),
     db: Session = Depends(get_db),
 ):
@@ -56,8 +57,20 @@ def create_new_shop(
             description=description,
             address=address,
             shop_type=shop_type,
+            category=category,
             is_open=is_open,
         )
         return shop
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("", response_model=list[ShopResponse])
+@router.get("/", response_model=list[ShopResponse])
+def read_shops(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db),
+):
+    shops = get_all_shops(db, skip=skip, limit=limit)
+    return shops

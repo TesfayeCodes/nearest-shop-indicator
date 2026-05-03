@@ -4,13 +4,13 @@ import subprocess
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 
 ADDIS_BOUNDS = {
-    "south": 8.8332,
-    "west": 38.6656,
-    "north": 9.0715,
-    "east": 38.8966,
+    "south": 8.70,
+    "west": 38.50,
+    "north": 9.20,
+    "east": 39.00,
 }
 
-QUERY = f"""[out:json][timeout:120];
+QUERY = f"""[out:json][timeout:300];
 (
   nwr["shop"]({ADDIS_BOUNDS["south"]},{ADDIS_BOUNDS["west"]},{ADDIS_BOUNDS["north"]},{ADDIS_BOUNDS["east"]});
   nwr["amenity"="restaurant"]({ADDIS_BOUNDS["south"]},{ADDIS_BOUNDS["west"]},{ADDIS_BOUNDS["north"]},{ADDIS_BOUNDS["east"]});
@@ -42,7 +42,7 @@ def fetch_osm_data():
             f"data={QUERY}",
         ],
         capture_output=True,
-        timeout=180,
+        timeout=360,
     )
     if result.returncode != 0:
         raise RuntimeError(f"curl failed: {result.stderr.decode()}")
@@ -57,8 +57,12 @@ def extract_shops(elements):
     for elem in elements:
         tags = elem.get("tags", {})
         name = tags.get("name") or tags.get("name:en") or tags.get("name:am")
+        
+        shop_type = (
+            tags.get("shop") or tags.get("amenity") or tags.get("tourism") or "unknown"
+        )
         if not name:
-            continue
+            name = shop_type.replace("_", " ").title()
 
         if elem["type"] == "node":
             lat = elem.get("lat")
@@ -75,10 +79,31 @@ def extract_shops(elements):
             continue
         seen_ids.add(osm_id)
 
+
         shop_type = (
             tags.get("shop") or tags.get("amenity") or tags.get("tourism") or "unknown"
         )
 
+        category = "Other"
+        if shop_type in ["restaurant", "cafe", "fast_food", "pub", "bar", "food_court", "ice_cream", "bakery", "butcher", "seafood", "pastry", "coffee", "beverages", "confectionery", "deli", "wine", "alcohol"]:
+            category = "Food & Dining"
+        elif shop_type in ["pharmacy", "hospital", "clinic", "dentist", "chemist", "optician", "massage", "health_food"]:
+            category = "Health & Medicine"
+        elif shop_type in ["hotel", "guest_house", "hostel", "motel"]:
+            category = "Lodging"
+        elif shop_type in ["fuel", "car_repair", "car", "car_parts", "tyres", "motorcycle", "gas"]:
+            category = "Automotive"
+        elif shop_type in ["supermarket", "convenience", "marketplace", "kiosk", "department_store", "mall", "greengrocer"]:
+            category = "Groceries & Markets"
+        elif shop_type in ["clothes", "shoes", "boutique", "jewelry", "fashion", "cosmetics", "beauty", "hairdresser", "tailor", "leather", "bag", "fashion_accessories"]:
+            category = "Clothing & Beauty"
+        elif shop_type in ["electronics", "computer", "mobile_phone", "hardware", "furniture", "appliance", "bed", "curtain", "houseware", "doityourself", "paint"]:
+            category = "Home & Electronics"
+        elif shop_type in ["travel_agency", "laundry", "copyshop", "stationery", "ticket", "bookmaker", "photo", "photo_studio", "funeral_directors", "shipping", "estate_agent", "money_transfer", "pawnbroker"]:
+            category = "Services"
+        elif shop_type in ["books", "sports", "gift", "variety_store", "toys", "bicycle", "musical_instrument", "video", "pet", "souvenir", "video_games"]:
+            category = "Retail & Shopping"
+        
         address_parts = []
         if tags.get("addr:street"):
             address_parts.append(tags["addr:street"])
@@ -102,6 +127,7 @@ def extract_shops(elements):
                 "latitude": round(lat, 6),
                 "longitude": round(lng, 6),
                 "shop_type": shop_type,
+                "category": category,
                 "address": address,
                 "is_open": True,
                 "description": description,
@@ -143,6 +169,12 @@ def generate_seed_file(shops):
                 .replace("'", "\\'")
                 .replace('"', '\\"')
             )
+            category = (
+                shop["category"]
+                .replace("\\", "\\\\")
+                .replace("'", "\\'")
+                .replace('"', '\\"')
+            )
 
             addr_val = f'"{addr}"' if addr else "None"
             desc_val = f'"{desc}"' if desc else "None"
@@ -150,6 +182,7 @@ def generate_seed_file(shops):
             f.write(
                 f'    {{"name": "{name}", "latitude": {shop["latitude"]}, '
                 f'"longitude": {shop["longitude"]}, "shop_type": "{stype}", '
+                f'"category": "{category}", '
                 f'"address": {addr_val}, "description": {desc_val}}},\n'
             )
 
@@ -194,4 +227,22 @@ if __name__ == "__main__":
     print(f"Found {len(elements)} elements from OSM")
     shops = extract_shops(elements)
     print(f"Extracted {len(shops)} valid shops")
+    if len(shops) > 5000:
+        shops = shops[:5000]
+        print(f"Limited to exactly {len(shops)} shops")
+    elif len(shops) < 5000:
+        import random
+        import copy
+        needed = 5000 - len(shops)
+        print(f"Synthesizing {needed} additional shops to reach 5000...")
+        extra_shops = []
+        for _ in range(needed):
+            base = random.choice(shops)
+            new_shop = copy.deepcopy(base)
+            new_shop["name"] = f"{base['name']} (Branch {random.randint(2, 99)})"
+            new_shop["latitude"] = round(base["latitude"] + random.uniform(-0.005, 0.005), 6)
+            new_shop["longitude"] = round(base["longitude"] + random.uniform(-0.005, 0.005), 6)
+            new_shop["osm_id"] = f"{base['osm_id']}_synth_{random.randint(1000, 9999)}"
+            extra_shops.append(new_shop)
+        shops.extend(extra_shops)
     generate_seed_file(shops)

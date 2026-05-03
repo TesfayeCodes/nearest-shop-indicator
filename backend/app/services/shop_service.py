@@ -40,6 +40,7 @@ def create_shop(
     description: str | None = None,
     address: str | None = None,
     shop_type: str | None = None,
+    category: str | None = None,
     is_open: bool = True,
 ) -> Shop:
     shop = Shop(
@@ -49,9 +50,14 @@ def create_shop(
         description=description,
         address=address,
         shop_type=shop_type,
+        category=category,
         is_open=is_open,
     )
     db.add(shop)
     db.commit()
     db.refresh(shop)
     return shop
+
+
+def get_all_shops(db: Session, skip: int = 0, limit: int = 100) -> list[Shop]:
+    return db.query(Shop).offset(skip).limit(limit).all()
