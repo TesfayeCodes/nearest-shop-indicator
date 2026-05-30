@@ -1,0 +1,1 @@
+# nearest-shop-indicator
