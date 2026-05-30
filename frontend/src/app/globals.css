@@ -1,8 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{dark}
+  body{
+    font-family:'Inter',sans-serif;
+    background:#070c1a;color:#f8fafc;
+    min-height:100vh;overflow-x:hidden;font-size:14px;
+  }
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:4px}
+}
+
+@layer components {
+  .card-base{
+    @apply border border-[rgba(255,255,255,0.07)] rounded-2xl;
+    background:rgba(255,255,255,0.035);
+    transition:border-color 0.2s,transform 0.2s;
+  }
+  .card-base:hover{
+    border-color:rgba(255,255,255,0.12);
+    transform:translateY(-2px);
+  }
+  .btn-primary{
+    @apply inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white border-none cursor-pointer;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+    box-shadow:0 4px 24px rgba(59,130,246,0.3);
+    transition:all 0.25s;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(59,130,246,0.45)}
+  .btn-secondary{
+    @apply inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm cursor-pointer;
+    background:rgba(255,255,255,0.055);
+    border:1px solid rgba(255,255,255,0.12);
+    color:#f8fafc;backdrop-filter:blur(10px);
+    transition:all 0.25s;
+  }
+  .btn-secondary:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2)}
+  .grad-text{
+    background:linear-gradient(135deg,#60a5fa,#34d399);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .section-wrap{
+    @apply max-w-[940px] mx-auto w-full px-8;
+  }
+  .grid-road{
+    background-image:linear-gradient(rgba(59,130,246,0.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,0.05) 1px,transparent 1px);
+    background-size:44px 44px;
+  }
+  .road{
+    @apply absolute;
+    background:rgba(59,130,246,0.15);
+  }
+  .road.h{height:2px;left:0;right:0}
+  .road.v{width:2px;top:0;bottom:0}
+  .road.thick{background:rgba(59,130,246,0.25);height:3px}
+  .glow-ring{box-shadow:0 0 80px rgba(59,130,246,0.1),inset 0 0 0 1px rgba(255,255,255,0.07)}
+}
+
+@layer utilities {
+  .scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+  .scroll-hide::-webkit-scrollbar{display:none}
 }

@@ -1,35 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { create } from "zustand";
 
 interface GeolocationState {
   latitude: number | null;
   longitude: number | null;
   error: string | null;
+  loading: boolean;
+  setLocation: (lat: number, lon: number) => void;
+  setError: (err: string) => void;
+  setLoading: (v: boolean) => void;
 }
 
-export function useGeolocation() {
-  const [state, setState] = useState<GeolocationState>({
-    latitude: null,
-    longitude: null,
-    error: null,
-  });
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setState((s) => ({ ...s, error: "Geolocation not supported" }));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        setState({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          error: null,
-        }),
-      (err) => setState((s) => ({ ...s, error: err.message }))
-    );
-  }, []);
-
-  return state;
-}
+export const useGeolocationStore = create<GeolocationState>((set) => ({
+  latitude: null,
+  longitude: null,
+  error: null,
+  loading: false,
+  setLocation: (latitude, longitude) =>
+    set({ latitude, longitude, error: null, loading: false }),
+  setError: (error) => set({ error, loading: false }),
+  setLoading: (loading) => set({ loading }),
+}));

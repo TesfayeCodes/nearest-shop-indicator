@@ -1,7 +1,13 @@
 export interface User {
   id: number;
   email: string;
-  is_active: boolean;
+  name: string;
+  initials: string;
+  plan: "Free" | "Pro" | "Team";
+  city: string;
+  joined: string;
+  active: boolean;
+  avatar?: string;
 }
 
 export interface LoginPayload {
@@ -12,4 +18,5 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string;
   password: string;
+  name: string;
 }
