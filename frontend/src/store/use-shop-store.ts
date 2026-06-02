@@ -45,9 +45,10 @@ export const useShopStore = create<ShopStore>((set) => ({
   setSearchQuery: (searchQuery) =>
     set((state) => {
       let filtered = state.shops;
-      if (state.activeCategory) {
+      const activeCat = state.activeCategory;
+      if (activeCat) {
         filtered = filtered.filter(
-          (s) => s.category.toLowerCase() === state.activeCategory.toLowerCase()
+          (s) => s.category.toLowerCase() === activeCat.toLowerCase()
         );
       }
       if (searchQuery) {

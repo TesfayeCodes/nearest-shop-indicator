@@ -54,7 +54,7 @@ export default function RegisterPage() {
 
         <p className="text-xs text-text2 text-center mt-6">
           Already have an account?{" "}
-          <Link href="/register" className="font-semibold no-underline" style={{ color: "#60a5fa" }}>Sign in</Link>
+          <Link href="/login" className="font-semibold no-underline" style={{ color: "#60a5fa" }}>Sign in</Link>
         </p>
       </motion.div>
     </div>

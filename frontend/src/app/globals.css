@@ -5,7 +5,7 @@
 
 @layer base {
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{dark}
+  html{color-scheme:dark}
   body{
     font-family:'Inter',sans-serif;
     background:#070c1a;color:#f8fafc;

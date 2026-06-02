@@ -18,25 +18,33 @@ import {
   IconFileText,
 } from "@tabler/icons-react";
 
-const mainLinks = [
+interface SidebarLink {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number }>;
+  badge?: string;
+  amber?: boolean;
+}
+
+const mainLinks: SidebarLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { href: "/map", label: "Map View", icon: IconMap },
   { href: "#", label: "Nearby Shops", icon: IconBuildingStore, badge: "12" },
   { href: "#", label: "Favorites", icon: IconHeart },
 ];
 
-const exploreLinks = [
+const exploreLinks: SidebarLink[] = [
   { href: "#", label: "Categories", icon: IconGridDots },
   { href: "#", label: "Routes", icon: IconRoute },
   { href: "#", label: "Search", icon: IconSearch },
 ];
 
-const accountLinks = [
+const accountLinks: SidebarLink[] = [
   { href: "#", label: "Notifications", icon: IconBell, badge: "3", amber: true },
   { href: "#", label: "Settings", icon: IconSettings },
 ];
 
-const adminLinks = [
+const adminLinks: SidebarLink[] = [
   { href: "/admin", label: "Analytics", icon: IconChartBar },
   { href: "#", label: "Manage Shops", icon: IconBuildingStore },
   { href: "#", label: "Users", icon: IconUsers },
@@ -45,7 +53,7 @@ const adminLinks = [
   { href: "#", label: "Activity Logs", icon: IconFileText },
 ];
 
-const systemLinks = [
+const systemLinks: SidebarLink[] = [
   { href: "#", label: "Settings", icon: IconSettings },
 ];
 
@@ -144,7 +152,7 @@ export default function Sidebar({ variant = "user" }: SidebarProps) {
               {l.badge && (
                 <span
                   className="ml-auto text-[10px] font-bold px-[7px] py-[1px] rounded-full min-w-[18px] text-center text-white"
-                  style={{ background: l.amber ? "#f59e0b" : "#3b82f6" }}
+                style={{ background: l.amber ? "#f59e0b" : "#3b82f6" }}
                 >
                   {l.badge}
                 </span>
