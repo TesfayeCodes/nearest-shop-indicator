@@ -2,11 +2,39 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { IconMapPin, IconMail, IconLock, IconEye, IconEyeOff, IconArrowLeft } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { IconMapPin, IconMail, IconLock, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { motion } from "framer-motion";
+import { authApi } from "@/services/auth";
+import { ApiError } from "@/services/api-client";
+import { useUserStore } from "@/store/use-user-store";
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { setUser, setToken } = useUserStore();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const tokenRes = await authApi.login({ email, password });
+      setToken(tokenRes.access_token);
+      localStorage.setItem("token", tokenRes.access_token);
+      const user = await authApi.getMe();
+      setUser(user);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{
@@ -21,12 +49,18 @@ export default function LoginPage() {
         <h1 className="text-xl font-extrabold text-center tracking-tight mb-1">Welcome back</h1>
         <p className="text-[13px] text-text2 text-center mb-7">Sign in to your NearShop account</p>
 
-        <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+        {error && (
+          <div className="mb-4 p-3 rounded-xl text-xs font-medium" style={{ background: "rgba(239,68,68,0.1)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.2)" }}>
+            {error}
+          </div>
+        )}
+
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-medium text-text2">Email</label>
             <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm" style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.07)" }}>
               <IconMail size={16} style={{ color: "#475569" }} />
-              <input type="email" placeholder="you@email.com" className="bg-transparent border-none outline-none text-sm text-text font-inherit flex-1 placeholder:text-text3" />
+              <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-transparent border-none outline-none text-sm text-text font-inherit flex-1 placeholder:text-text3" />
             </div>
           </div>
 
@@ -34,7 +68,7 @@ export default function LoginPage() {
             <label className="text-[13px] font-medium text-text2">Password</label>
             <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm" style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.07)" }}>
               <IconLock size={16} style={{ color: "#475569" }} />
-              <input type={showPw ? "text" : "password"} placeholder="••••••••" className="bg-transparent border-none outline-none text-sm text-text font-inherit flex-1 placeholder:text-text3" />
+              <input type={showPw ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="bg-transparent border-none outline-none text-sm text-text font-inherit flex-1 placeholder:text-text3" />
               <button type="button" onClick={() => setShowPw(!showPw)} className="bg-transparent border-none cursor-pointer flex" style={{ color: "#475569" }}>
                 {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
               </button>
@@ -49,7 +83,9 @@ export default function LoginPage() {
             <Link href="#" className="no-underline" style={{ color: "#60a5fa" }}>Forgot password?</Link>
           </div>
 
-          <button type="submit" className="btn-primary w-full justify-center">Sign In</button>
+          <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
         </form>
 
         <p className="text-xs text-text2 text-center mt-6">

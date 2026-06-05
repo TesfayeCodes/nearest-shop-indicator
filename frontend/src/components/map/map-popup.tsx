@@ -23,7 +23,7 @@ export function MapPopup({ shop, onNavigate }: MapPopupProps) {
         className="w-[52px] h-[52px] rounded-xl flex-shrink-0 flex items-center justify-center text-2xl"
         style={{ background: "rgba(59,130,246,0.15)" }}
       >
-        <span style={{ fontSize: 24 }}>{shop.icon}</span>
+        <span style={{ fontSize: 24 }}>{shop.icon || "📍"}</span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-extrabold tracking-tight text-text mb-1">
@@ -44,17 +44,17 @@ export function MapPopup({ shop, onNavigate }: MapPopupProps) {
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
             style={{
-              background: shop.open
+              background: shop.is_open
                 ? "rgba(16,185,129,0.1)"
                 : "rgba(239,68,68,0.1)",
-              color: shop.open ? "#34d399" : "#fca5a5",
-              border: shop.open
+              color: shop.is_open ? "#34d399" : "#fca5a5",
+              border: shop.is_open
                 ? "1px solid rgba(16,185,129,0.2)"
                 : "1px solid rgba(239,68,68,0.2)",
             }}
           >
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: "currentColor" }} />
-            {shop.open ? "Open" : "Closed"}
+            {shop.is_open ? "Open" : "Closed"}
           </span>
           <span
             className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
@@ -72,7 +72,7 @@ export function MapPopup({ shop, onNavigate }: MapPopupProps) {
             <IconWalk size={13} /> {shop.distance?.toFixed(1)} km
           </span>
           <span className="flex items-center gap-1">
-            <IconClock size={13} /> ~{shop.walkTime}
+            <IconClock size={13} /> ~{shop.distance ? `${Math.round(shop.distance * 12)} min` : "—"}
           </span>
         </div>
         <div className="flex gap-2 mt-3">

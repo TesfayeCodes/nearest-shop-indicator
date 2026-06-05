@@ -1,7 +1,7 @@
 "use client";
 
 import { type Shop } from "@/types/shop";
-import { IconStar, IconMapPin, IconNavigation } from "@tabler/icons-react";
+import { IconStar, IconWalk } from "@tabler/icons-react";
 
 const categoryColors: Record<string, string> = {
   Grocery: "rgba(59,130,246,0.1)",
@@ -35,10 +35,10 @@ export function ShopCard({ shop, onSelect }: ShopCardProps) {
       <div
         className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center text-xl"
         style={{
-          background: categoryColors[shop.category] || "rgba(59,130,246,0.1)",
+          background: (shop.category && categoryColors[shop.category]) || "rgba(59,130,246,0.1)",
         }}
       >
-        <span style={{ fontSize: 20 }}>{shop.icon}</span>
+        <span style={{ fontSize: 20 }}>{shop.icon || "📍"}</span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-bold tracking-tight text-text mb-0.5">
@@ -58,11 +58,11 @@ export function ShopCard({ shop, onSelect }: ShopCardProps) {
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
             style={{
-              background: shop.open
+              background: shop.is_open
                 ? "rgba(16,185,129,0.1)"
                 : "rgba(239,68,68,0.1)",
-              color: shop.open ? "#34d399" : "#fca5a5",
-              border: shop.open
+              color: shop.is_open ? "#34d399" : "#fca5a5",
+              border: shop.is_open
                 ? "1px solid rgba(16,185,129,0.2)"
                 : "1px solid rgba(239,68,68,0.2)",
             }}
@@ -71,7 +71,7 @@ export function ShopCard({ shop, onSelect }: ShopCardProps) {
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "currentColor" }}
             />
-            {shop.open ? "Open" : "Closed"}
+            {shop.is_open ? "Open" : "Closed"}
           </span>
         </div>
       </div>
@@ -79,8 +79,8 @@ export function ShopCard({ shop, onSelect }: ShopCardProps) {
         <div className="text-[13px] font-bold" style={{ color: "#60a5fa" }}>
           {shop.distance?.toFixed(1)} km
         </div>
-        <div className="text-[11px] text-text2 mt-0.5">
-          ~{shop.walkTime}
+        <div className="text-[11px] text-text2 mt-0.5 flex items-center gap-0.5 justify-end">
+          <IconWalk size={11} /> {shop.distance ? `${Math.round(shop.distance * 12)} min` : "—"}
         </div>
       </div>
     </div>

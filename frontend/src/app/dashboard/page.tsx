@@ -2,21 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { IconSearch, IconCurrentLocation, IconBuildingStore, IconMapPin, IconHeart, IconTrendingUp, IconTrendingDown, IconGridDots, IconMaximize, IconRefresh, IconAdjustmentsHorizontal, IconActivity, IconNavigation, IconStar, IconCoffee, IconPill, IconToolsKitchen2, IconBook, IconWalk, IconClock, IconShoppingCart } from "@tabler/icons-react";
+import { IconSearch, IconCurrentLocation, IconBuildingStore, IconMapPin, IconHeart, IconTrendingUp, IconTrendingDown, IconGridDots, IconMaximize, IconRefresh, IconAdjustmentsHorizontal, IconActivity, IconNavigation, IconStar, IconClock, IconWalk } from "@tabler/icons-react";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { ShopCard } from "@/components/shop/shop-card";
 import { type Shop } from "@/types/shop";
+import { shopsApi } from "@/services/shops";
+import { useLocationStore } from "@/store/use-location-store";
 
-const defaultShops: Shop[] = [
-  { id: 1, name: "FreshMart", category: "Grocery", latitude: 9.03, longitude: 38.74, address: "Bole, Addis Ababa", rating: 4.8, reviewCount: 320, open: true, closingTime: "10pm", distance: 0.2, walkTime: "3 min", phone: "+251 911 000 111", icon: "🛒", color: "#3b82f6" },
-  { id: 2, name: "Brew House Cafe", category: "Cafe", latitude: 9.02, longitude: 38.75, address: "Kazanchis, Addis Ababa", rating: 4.5, reviewCount: 180, open: true, closingTime: "11pm", distance: 0.5, walkTime: "7 min", icon: "☕", color: "#10b981" },
-  { id: 3, name: "MedPlus Pharmacy", category: "Pharmacy", latitude: 9.01, longitude: 38.73, address: "CMC, Addis Ababa", rating: 4.9, reviewCount: 95, open: true, closingTime: "9pm", distance: 0.7, walkTime: "10 min", icon: "💊", color: "#8b5cf6" },
-  { id: 4, name: "UrbanBites", category: "Restaurant", latitude: 9.04, longitude: 38.72, address: "Piassa, Addis Ababa", rating: 4.3, reviewCount: 210, open: false, closingTime: "10pm", distance: 1.1, walkTime: "14 min", icon: "🍔", color: "#f59e0b" },
-  { id: 5, name: "PageTurner Books", category: "Bookstore", latitude: 9.05, longitude: 38.76, address: "Bole, Addis Ababa", rating: 4.7, reviewCount: 64, open: true, closingTime: "8pm", distance: 1.4, walkTime: "18 min", icon: "📚", color: "#ef4444" },
-  { id: 6, name: "StyleHub", category: "Clothing", latitude: 9.00, longitude: 38.77, address: "Megenagna, Addis Ababa", rating: 4.4, reviewCount: 130, open: true, closingTime: "9pm", distance: 1.8, walkTime: "22 min", icon: "👗", color: "#ec4899" },
-  { id: 7, name: "TechWorld", category: "Electronics", latitude: 9.06, longitude: 38.71, address: "Merkato, Addis Ababa", rating: 4.6, reviewCount: 88, open: false, closingTime: "8pm", distance: 2.1, walkTime: "26 min", icon: "📱", color: "#f472b6" },
-];
+const NearShopMap = dynamic(() => import("@/components/map/nearshop-map").then((m) => m.NearShopMap), {
+  ssr: false,
+  loading: () => <div className="h-full flex items-center justify-center text-xs text-text2">Loading map...</div>,
+});
 
 const activities = [
   { icon: IconNavigation, bg: "rgba(59,130,246,0.1)", color: "#60a5fa", text: "Navigated to FreshMart", time: "2 min ago" },
@@ -24,14 +22,60 @@ const activities = [
   { icon: IconHeart, bg: "rgba(16,185,129,0.1)", color: "#34d399", text: "Added MedPlus to Favorites", time: "3 hr ago" },
 ];
 
-const chips = ["All", "🛒 Grocery", "☕ Cafe", "💊 Pharmacy", "🍔 Restaurant", "📱 Electronics"];
-
 export default function DashboardPage() {
-  const [shops] = useState<Shop[]>(defaultShops);
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeChip, setActiveChip] = useState("All");
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const { latitude, longitude, setLocation } = useLocationStore();
 
-  const filtered = activeChip === "All" ? shops : shops.filter(s => s.category === activeChip.replace(/^[^\s]+\s/, ""));
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setLocation(pos.coords.latitude, pos.coords.longitude),
+        () => {}
+      );
+    }
+  }, [setLocation]);
+
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const lat = latitude || 9.03;
+        const lng = longitude || 38.74;
+        const data = await shopsApi.nearby(lat, lng, 5);
+        const mapped: Shop[] = data.items.map((s) => ({
+          id: s.id,
+          name: s.name,
+          category: s.category_name || s.category || "Other",
+          category_name: s.category_name,
+          latitude: s.latitude,
+          longitude: s.longitude,
+          address: s.address,
+          phone: s.phone,
+          image_url: s.image_url,
+          rating: s.rating,
+          review_count: s.review_count,
+          is_open: s.is_open,
+          closing_time: s.closing_time,
+          distance: s.distance,
+          icon: s.icon || "📍",
+        }));
+        setShops(mapped);
+        if (mapped.length > 0 && !selectedShop) {
+          setSelectedShop(mapped[0]);
+        }
+      } catch {
+        // fallback empty
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShops();
+  }, [latitude, longitude]);
+
+  const chips = ["All", "Grocery", "Cafe", "Pharmacy", "Restaurant", "Electronics"];
+  const filtered = activeChip === "All" ? shops : shops.filter(s => s.category === activeChip);
 
   return (
     <>
@@ -62,10 +106,10 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
             {[
-              { icon: IconBuildingStore, label: "Shops Nearby", val: "24", color: "#60a5fa", cls: "b", change: "3 new today", up: true },
-              { icon: IconMapPin, label: "Closest Shop", val: "0.2 km", color: "#34d399", cls: "g", change: "FreshMart · Open", up: true },
-              { icon: IconHeart, label: "Favorites", val: "8", color: "#c4b5fd", cls: "p", change: "1 added", up: true },
-              { icon: IconSearch, label: "Searches Today", val: "17", color: "#fcd34d", cls: "a", change: "Down 2 vs yesterday", up: false },
+              { icon: IconBuildingStore, label: "Shops Nearby", val: String(shops.length), color: "#60a5fa", change: "Within 5 km", up: true },
+              { icon: IconMapPin, label: "Closest Shop", val: shops.length > 0 ? `${Math.min(...shops.map(s => s.distance || 999))} km` : "—", color: "#34d399", change: shops.filter(s => s.is_open).length > 0 ? `${shops.filter(s => s.is_open)[0]?.name || ""}` : "None open", up: true },
+              { icon: IconHeart, label: "Favorites", val: "0", color: "#c4b5fd", change: "Save shops to favorites", up: true },
+              { icon: IconSearch, label: "Radius", val: "5 km", color: "#fcd34d", change: "Search area", up: true },
             ].map((m) => (
               <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-base p-5 cursor-default relative overflow-hidden">
                 <div className="absolute -top-7 -right-7 w-20 h-20 rounded-full opacity-[0.06]" style={{ background: m.color }} />
@@ -101,39 +145,18 @@ export default function DashboardPage() {
                     <button className="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm transition-colors hover:bg-white/5 hover:text-text hover:border-border2"><IconRefresh size={14} /></button>
                   </div>
                 </div>
-                <div className="h-[270px] relative bg-[#080f22] overflow-hidden">
-                  <div className="absolute inset-0 grid-road" />
-                  <div className="road h" style={{ top: "35%" }} /><div className="road h thick" style={{ top: "62%" }} />
-                  <div className="road v" style={{ left: "28%" }} /><div className="road v thick" style={{ left: "60%" }} />
-                  <div className="absolute rounded-full" style={{ width: 220, height: 220, top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)" }} />
-                  <div className="absolute" style={{ top: "46%", left: "45%" }}><div className="w-[16px] h-[16px] rounded-full" style={{ background: "#3b82f6", boxShadow: "0 0 0 6px rgba(59,130,246,0.2), 0 0 0 12px rgba(59,130,246,0.08)", animation: "upulse 2s ease-in-out infinite" }} /></div>
-                  {shops.slice(0, 3).map((s, i) => {
-                    const positions = [{ top: "20%", left: "22%" }, { top: "60%", left: "62%" }, { top: "28%", left: "60%" }];
-                    return (
-                      <div key={s.id} className="absolute" style={positions[i]}>
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] text-white font-bold cursor-pointer" style={{ background: s.color, boxShadow: `0 4px 16px ${s.color}80`, animation: "pfloat 3s ease-in-out infinite" }}>
-                          <span style={{ fontSize: 11 }}>{s.icon}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {selectedShop && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-3.5 left-3 right-3 rounded-2xl p-4 flex gap-3" style={{ background: "rgba(8,15,34,0.92)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                      <div className="w-[52px] h-[52px] rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: "rgba(59,130,246,0.15)" }}><span>{selectedShop.icon}</span></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-extrabold tracking-tight">{selectedShop.name}</div>
-                        <div className="flex items-center gap-2 flex-wrap text-[11px] text-text2 mt-1">
-                          <span className="flex" style={{ color: "#fbbf24" }}>{"★".repeat(Math.round(selectedShop.rating))}</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: selectedShop.open ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", color: selectedShop.open ? "#34d399" : "#fca5a5", border: `1px solid ${selectedShop.open ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}` }}>
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "currentColor" }} />{selectedShop.open ? "Open" : "Closed"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1.5 text-xs">
-                          <span className="flex items-center gap-1 font-bold" style={{ color: "#60a5fa" }}><IconWalk size={13} /> {selectedShop.distance} km</span>
-                          <span className="text-text2 flex items-center gap-1"><IconClock size={13} /> ~{selectedShop.walkTime}</span>
-                        </div>
-                      </div>
-                    </motion.div>
+                <div className="h-[270px] relative overflow-hidden">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full text-xs text-text2">Loading nearby shops...</div>
+                  ) : (
+                    <NearShopMap
+                      shops={shops}
+                      selectedShop={selectedShop}
+                      onSelectShop={setSelectedShop}
+                      userLatitude={latitude ?? undefined}
+                      userLongitude={longitude ?? undefined}
+                      interactive={false}
+                    />
                   )}
                 </div>
               </div>
@@ -144,10 +167,9 @@ export default function DashboardPage() {
                 </div>
                 <div className="p-4">
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2">
-                    {["🛒 Grocery", "☕ Cafe", "💊 Pharmacy", "🍔 Food", "📱 Tech", "👗 Fashion"].map((c) => (
+                    {["Grocery", "Cafe", "Pharmacy", "Restaurant", "Electronics", "Clothing"].map((c) => (
                       <div key={c} className="p-3 text-center rounded-2xl cursor-pointer transition-all" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                        <div className="text-xl mb-1">{c.split(" ")[0]}</div>
-                        <div className="text-[10px] font-semibold text-text2">{c.split(" ")[1]}</div>
+                        <div className="text-[10px] font-semibold text-text2">{c}</div>
                       </div>
                     ))}
                   </div>
@@ -162,9 +184,15 @@ export default function DashboardPage() {
                   <div className="ml-auto"><button className="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm"><IconAdjustmentsHorizontal size={14} /></button></div>
                 </div>
                 <div className="flex flex-col">
-                  {filtered.map((s) => (
-                    <ShopCard key={s.id} shop={s} onSelect={setSelectedShop} />
-                  ))}
+                  {loading ? (
+                    <div className="p-5 text-xs text-text2 text-center">Loading...</div>
+                  ) : filtered.length === 0 ? (
+                    <div className="p-5 text-xs text-text2 text-center">No shops found nearby</div>
+                  ) : (
+                    filtered.map((s) => (
+                      <ShopCard key={s.id} shop={s} onSelect={setSelectedShop} />
+                    ))
+                  )}
                 </div>
               </div>
 

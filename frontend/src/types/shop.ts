@@ -1,25 +1,24 @@
 export interface Shop {
   id: number;
   name: string;
-  category: string;
+  category: string | null;
+  category_name: string | null;
+  icon: string | null;
   latitude: number;
   longitude: number;
   address: string | null;
+  phone: string | null;
+  image_url: string | null;
   rating: number;
-  reviewCount: number;
-  open: boolean;
-  closingTime?: string;
+  review_count: number;
+  is_open: boolean;
+  closing_time: string | null;
   distance?: number;
-  walkTime?: string;
-  phone?: string;
-  image?: string;
-  color: string;
-  icon: string;
 }
 
-export interface ShopCreate {
+export interface ShopCreatePayload {
   name: string;
-  category: string;
+  category_slug?: string;
   latitude: number;
   longitude: number;
   address?: string;
