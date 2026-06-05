@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [activeChip, setActiveChip] = useState("All");
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [openNow, setOpenNow] = useState(false);
   const { latitude, longitude, setLocation } = useLocationStore();
 
   useEffect(() => {
@@ -75,7 +76,11 @@ export default function DashboardPage() {
   }, [latitude, longitude]);
 
   const chips = ["All", "Grocery", "Cafe", "Pharmacy", "Restaurant", "Electronics"];
-  const filtered = activeChip === "All" ? shops : shops.filter(s => s.category === activeChip);
+  const filtered = shops.filter(s => {
+    const catMatch = activeChip === "All" || s.category === activeChip;
+    const openMatch = !openNow || s.is_open;
+    return catMatch && openMatch;
+  });
 
   return (
     <>
@@ -130,7 +135,7 @@ export default function DashboardPage() {
                 {c}
               </button>
             ))}
-            <button className="px-3.5 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-all flex items-center gap-1" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)", color: "#94a3b8" }}>
+            <button onClick={() => setOpenNow(!openNow)} className={`px-3.5 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-all flex items-center gap-1 ${openNow ? "text-em-light" : "text-text2"}`} style={{ background: openNow ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.035)", border: `1px solid ${openNow ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.07)"}` }}>
               <IconClock size={12} /> Open Now
             </button>
           </div>
