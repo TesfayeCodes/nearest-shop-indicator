@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { motion } from "framer-motion";
 import { IconSearch, IconCurrentLocation, IconBuildingStore, IconMapPin, IconHeart, IconTrendingUp, IconTrendingDown, IconGridDots, IconMaximize, IconRefresh, IconAdjustmentsHorizontal, IconActivity, IconNavigation, IconStar, IconClock, IconWalk } from "@tabler/icons-react";
 import dynamic from "next/dynamic";
@@ -28,6 +29,8 @@ export default function DashboardPage() {
   const [activeChip, setActiveChip] = useState("All");
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [openNow, setOpenNow] = useState(false);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const { latitude, longitude, setLocation } = useLocationStore();
 
   useEffect(() => {
@@ -79,7 +82,8 @@ export default function DashboardPage() {
   const filtered = shops.filter(s => {
     const catMatch = activeChip === "All" || s.category === activeChip;
     const openMatch = !openNow || s.is_open;
-    return catMatch && openMatch;
+    const searchMatch = !debouncedSearch || s.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+    return catMatch && openMatch && searchMatch;
   });
 
   return (
@@ -101,7 +105,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2.5">
               <div className="flex items-center gap-2 px-3 h-[38px] rounded-xl" style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <IconSearch size={16} style={{ color: "#475569" }} />
-                <input type="text" placeholder="Search shops..." className="bg-transparent border-none outline-none text-[13px] text-text font-inherit flex-1" />
+                <input type="text" placeholder="Search shops..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] text-text font-inherit flex-1" />
               </div>
               <button className="btn-primary text-xs px-4 py-2" style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <IconCurrentLocation size={14} /> Locate Me
