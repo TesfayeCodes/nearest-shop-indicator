@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { motion } from "framer-motion";
 import { IconSearch, IconCurrentLocation, IconBuildingStore, IconMapPin, IconHeart, IconTrendingUp, IconTrendingDown, IconGridDots, IconMaximize, IconRefresh, IconAdjustmentsHorizontal, IconActivity, IconNavigation, IconStar, IconClock, IconWalk } from "@tabler/icons-react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { ShopCard } from "@/components/shop/shop-card";
 import { type Shop } from "@/types/shop";
 import { shopsApi } from "@/services/shops";
 import { useLocationStore } from "@/store/use-location-store";
+import { useToast } from "@/components/ui/toast";
 
 const NearShopMap = dynamic(() => import("@/components/map/nearshop-map").then((m) => m.NearShopMap), {
   ssr: false,
@@ -32,6 +34,8 @@ export default function DashboardPage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const { latitude, longitude, setLocation } = useLocationStore();
+  const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -42,41 +46,59 @@ export default function DashboardPage() {
     }
   }, [setLocation]);
 
-  useEffect(() => {
-    const fetchShops = async () => {
-      try {
-        const lat = latitude || 9.03;
-        const lng = longitude || 38.74;
-        const data = await shopsApi.nearby(lat, lng, 5);
-        const mapped: Shop[] = data.items.map((s) => ({
-          id: s.id,
-          name: s.name,
-          category: s.category_name || s.category || "Other",
-          category_name: s.category_name,
-          latitude: s.latitude,
-          longitude: s.longitude,
-          address: s.address,
-          phone: s.phone,
-          image_url: s.image_url,
-          rating: s.rating,
-          review_count: s.review_count,
-          is_open: s.is_open,
-          closing_time: s.closing_time,
-          distance: s.distance,
-          icon: s.icon || "📍",
-        }));
-        setShops(mapped);
-        if (mapped.length > 0 && !selectedShop) {
-          setSelectedShop(mapped[0]);
-        }
-      } catch {
-        // fallback empty
-      } finally {
-        setLoading(false);
+  const fetchShops = useCallback(async () => {
+    try {
+      const lat = latitude || 9.03;
+      const lng = longitude || 38.74;
+      const data = await shopsApi.nearby(lat, lng, 5);
+      const mapped: Shop[] = data.items.map((s) => ({
+        id: s.id,
+        name: s.name,
+        category: s.category_name || s.category || "Other",
+        category_name: s.category_name,
+        latitude: s.latitude,
+        longitude: s.longitude,
+        address: s.address,
+        phone: s.phone,
+        image_url: s.image_url,
+        rating: s.rating,
+        review_count: s.review_count,
+        is_open: s.is_open,
+        closing_time: s.closing_time,
+        distance: s.distance,
+        icon: s.icon || "📍",
+      }));
+      setShops(mapped);
+      if (mapped.length > 0 && !selectedShop) {
+        setSelectedShop(mapped[0]);
       }
-    };
+    } catch {
+      // fallback empty
+    } finally {
+      setLoading(false);
+    }
+  }, [latitude, longitude, selectedShop]);
+
+  useEffect(() => {
     fetchShops();
-  }, [latitude, longitude]);
+  }, [fetchShops]);
+
+  const handleLocateMe = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { setLocation(pos.coords.latitude, pos.coords.longitude); toast("Location updated successfully", "success"); },
+        () => { toast("Unable to get your location", "error"); }
+      );
+    } else {
+      toast("Geolocation is not supported by your browser", "error");
+    }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    await fetchShops();
+    toast("Shops refreshed", "success");
+  };
 
   const chips = ["All", "Grocery", "Cafe", "Pharmacy", "Restaurant", "Electronics"];
   const filtered = shops.filter(s => {
@@ -107,7 +129,7 @@ export default function DashboardPage() {
                 <IconSearch size={16} style={{ color: "#475569" }} />
                 <input type="text" placeholder="Search shops..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] text-text font-inherit flex-1" />
               </div>
-              <button className="btn-primary text-xs px-4 py-2" style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <button onClick={handleLocateMe} className="btn-primary text-xs px-4 py-2" style={{ display: "flex", alignItems: "center", gap: 7 }}>
                 <IconCurrentLocation size={14} /> Locate Me
               </button>
             </div>
@@ -150,8 +172,8 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2 px-5 py-4 text-sm font-bold tracking-tight" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                   <IconMapPin size={17} style={{ color: "#3b82f6" }} /> Live Map
                   <div className="ml-auto flex gap-1.5">
-                    <button className="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm transition-colors hover:bg-white/5 hover:text-text hover:border-border2"><IconMaximize size={14} /></button>
-                    <button className="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm transition-colors hover:bg-white/5 hover:text-text hover:border-border2"><IconRefresh size={14} /></button>
+                    <button onClick={() => router.push("/map")} className="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm transition-colors hover:bg-white/5 hover:text-text hover:border-border2"><IconMaximize size={14} /></button>
+                    <button onClick={handleRefresh} className="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm transition-colors hover:bg-white/5 hover:text-text hover:border-border2"><IconRefresh size={14} /></button>
                   </div>
                 </div>
                 <div className="h-[270px] relative overflow-hidden">
@@ -177,8 +199,8 @@ export default function DashboardPage() {
                 <div className="p-4">
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2">
                     {["Grocery", "Cafe", "Pharmacy", "Restaurant", "Electronics", "Clothing"].map((c) => (
-                      <div key={c} className="p-3 text-center rounded-2xl cursor-pointer transition-all" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                        <div className="text-[10px] font-semibold text-text2">{c}</div>
+                      <div key={c} onClick={() => setActiveChip(c === activeChip ? "All" : c)} className="p-3 text-center rounded-2xl cursor-pointer transition-all" style={{ background: activeChip === c ? "rgba(59,130,246,0.1)" : "rgba(255,255,255,0.035)", border: `1px solid ${activeChip === c ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.07)"}` }}>
+                        <div className={`text-[10px] font-semibold ${activeChip === c ? "text-blue-light" : "text-text2"}`}>{c}</div>
                       </div>
                     ))}
                   </div>

@@ -32,32 +32,32 @@ interface SidebarLink {
 const mainLinks: SidebarLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { href: "/map", label: "Map View", icon: IconMap },
-  { href: "#", label: "Nearby Shops", icon: IconBuildingStore, badge: "12" },
-  { href: "#", label: "Favorites", icon: IconHeart },
+  { href: "/shops", label: "Nearby Shops", icon: IconBuildingStore },
+  { href: "/favorites", label: "Favorites", icon: IconHeart },
 ];
 
 const exploreLinks: SidebarLink[] = [
-  { href: "#", label: "Categories", icon: IconGridDots },
-  { href: "#", label: "Routes", icon: IconRoute },
-  { href: "#", label: "Search", icon: IconSearch },
+  { href: "/shops", label: "Categories", icon: IconGridDots },
+  { href: "/map", label: "Routes", icon: IconRoute },
+  { href: "/shops", label: "Search", icon: IconSearch },
 ];
 
 const accountLinks: SidebarLink[] = [
-  { href: "#", label: "Notifications", icon: IconBell, badge: "3", amber: true },
-  { href: "#", label: "Settings", icon: IconSettings },
+  { href: "/profile", label: "Notifications", icon: IconBell, badge: "3", amber: true },
+  { href: "/settings", label: "Settings", icon: IconSettings },
 ];
 
 const adminLinks: SidebarLink[] = [
   { href: "/admin", label: "Analytics", icon: IconChartBar },
-  { href: "#", label: "Manage Shops", icon: IconBuildingStore },
-  { href: "#", label: "Users", icon: IconUsers },
-  { href: "#", label: "Approvals", icon: IconChecklist, badge: "5", amber: true },
-  { href: "#", label: "Categories", icon: IconGridDots },
-  { href: "#", label: "Activity Logs", icon: IconFileText },
+  { href: "/shops", label: "Manage Shops", icon: IconBuildingStore },
+  { href: "/admin", label: "Users", icon: IconUsers },
+  { href: "/admin", label: "Approvals", icon: IconChecklist, badge: "5", amber: true },
+  { href: "/shops", label: "Categories", icon: IconGridDots },
+  { href: "/admin", label: "Activity Logs", icon: IconFileText },
 ];
 
 const systemLinks: SidebarLink[] = [
-  { href: "#", label: "Settings", icon: IconSettings },
+  { href: "/settings", label: "Settings", icon: IconSettings },
 ];
 
 interface SidebarProps {

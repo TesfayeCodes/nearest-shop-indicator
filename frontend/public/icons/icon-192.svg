@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="36" fill="#070c1a"/>
+  <rect x="16" y="16" width="160" height="160" rx="28" fill="url(#g)" opacity="0.12"/>
+  <!-- Map pin icon -->
+  <path d="M96 50c-16 0-29 13-29 29 0 22 29 55 29 55s29-33 29-55c0-16-13-29-29-29zm0 39c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="#3b82f6"/>
+  <!-- Pulse dot -->
+  <circle cx="96" cy="79" r="6" fill="#10b981"/>
+  <circle cx="96" cy="79" r="12" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.4"/>
+</svg>

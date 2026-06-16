@@ -10,6 +10,7 @@ import {
   IconLayoutDashboard,
   IconMap,
   IconShieldLock,
+  IconBuildingStore,
   IconMenu2,
   IconX,
   IconUser,
@@ -23,6 +24,7 @@ const links = [
   { href: "/", label: "Home", icon: IconHome },
   { href: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { href: "/map", label: "Map View", icon: IconMap },
+  { href: "/shops", label: "Shops", icon: IconBuildingStore },
   { href: "/admin", label: "Admin", icon: IconShieldLock },
 ];
 
@@ -102,12 +104,12 @@ export default function Navbar() {
                 className="absolute right-0 top-full mt-2 w-48 rounded-xl p-1.5 z-50"
                 style={{ background: "rgba(11,17,32,0.95)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.07)" }}
               >
-                {[
-                  { icon: IconUser, label: "Profile", href: "#" },
-                  { icon: IconHeart, label: "Favorites", href: "#", badge: "3" },
-                  { icon: IconSettings, label: "Settings", href: "#" },
+                {([
+                  { icon: IconUser, label: "Profile", href: "/profile" },
+                  { icon: IconHeart, label: "Favorites", href: "/favorites" },
+                  { icon: IconSettings, label: "Settings", href: "/settings" },
                   { icon: IconLogout, label: "Sign Out", href: "/login", danger: true },
-                ].map((item) => {
+                ] as { icon: typeof IconUser; label: string; href: string; danger?: boolean; badge?: string }[]).map((item) => {
                   const ItemIcon = item.icon;
                   return (
                     <Link

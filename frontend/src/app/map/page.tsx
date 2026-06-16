@@ -6,8 +6,10 @@ import { IconSearch, IconPlus, IconMinus, IconCurrentLocation, IconLayersInterse
 import dynamic from "next/dynamic";
 import Navbar from "@/components/layout/navbar";
 import { type Shop } from "@/types/shop";
+import { useRouter } from "next/navigation";
 import { shopsApi } from "@/services/shops";
 import { useLocationStore } from "@/store/use-location-store";
+import { useToast } from "@/components/ui/toast";
 
 const NearShopMap = dynamic(() => import("@/components/map/nearshop-map").then((m) => m.NearShopMap), {
   ssr: false,
@@ -66,14 +68,42 @@ export default function MapPage() {
     fetchShops();
   }, [latitude, longitude]);
 
-  const pinPositions = [
-    { top: "20%", left: "16%" },
-    { top: "56%", left: "58%" },
-    { top: "28%", left: "62%" },
-    { top: "70%", left: "28%" },
-    { top: "14%", left: "72%" },
-    { top: "36%", left: "80%" },
-  ];
+  const router = useRouter();
+  const { toast } = useToast();
+  const [favId, setFavId] = useState<number | null>(null);
+
+  const handleNavigate = () => {
+    if (selectedShop) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${selectedShop.latitude},${selectedShop.longitude}`, "_blank");
+    }
+  };
+
+  const handleFavorite = async () => {
+    if (!selectedShop) return;
+    try {
+      const res = await shopsApi.toggleFavorite(selectedShop.id);
+      setFavId(res.favorited ? selectedShop.id : null);
+      toast(res.favorited ? "Added to favorites" : "Removed from favorites", "success");
+    } catch { toast("Failed to toggle favorite", "error"); }
+  };
+
+  const handleShare = async () => {
+    if (!selectedShop) return;
+    const url = `https://maps.google.com/?q=${selectedShop.latitude},${selectedShop.longitude}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: selectedShop.name, text: `Check out ${selectedShop.name}`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast("Link copied to clipboard", "success");
+      }
+    } catch { toast("Failed to share", "error"); }
+  };
+
+  const handleTabClick = (key: string, href?: string) => {
+    setActiveTab(key);
+    if (href) router.push(href);
+  };
 
   return (
     <>
@@ -126,10 +156,10 @@ export default function MapPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-3.5">
-                <button className="btn-primary flex-1 justify-center text-xs py-2.5"><IconNavigation size={14} /> Navigate</button>
-                <button className="btn-secondary flex-1 justify-center text-xs py-2.5">View Details</button>
-                <button className="w-9 h-9 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm"><IconHeart size={15} /></button>
-                <button className="w-9 h-9 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm"><IconShare size={15} /></button>
+                <button onClick={handleNavigate} className="btn-primary flex-1 justify-center text-xs py-2.5"><IconNavigation size={14} /> Navigate</button>
+                <button onClick={() => router.push("/shops")} className="btn-secondary flex-1 justify-center text-xs py-2.5">View Details</button>
+                <button onClick={handleFavorite} className="w-9 h-9 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm"><IconHeart size={15} style={{ color: favId === selectedShop?.id ? "#ef4444" : undefined }} /></button>
+                <button onClick={handleShare} className="w-9 h-9 rounded-lg border border-[rgba(255,255,255,0.07)] bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm"><IconShare size={15} /></button>
               </div>
             </motion.div>
           )}
@@ -138,14 +168,14 @@ export default function MapPage() {
             {[
               { icon: IconMap, label: "Map", key: "map" },
               { icon: IconLayoutDashboard, label: "Dashboard", key: "dash", href: "/dashboard" },
-              { icon: IconBuildingStore, label: "Shops", key: "shops" },
-              { icon: IconHeart, label: "Saved", key: "saved" },
-              { icon: IconUser, label: "Profile", key: "profile" },
+              { icon: IconBuildingStore, label: "Shops", key: "shops", href: "/shops" },
+              { icon: IconHeart, label: "Saved", key: "saved", href: "/favorites" },
+              { icon: IconUser, label: "Profile", key: "profile", href: "/profile" },
             ].map((t) => {
               const Icon = t.icon;
               const isActive = activeTab === t.key;
               return (
-                <button key={t.key} onClick={() => { setActiveTab(t.key); if (t.href) window.location.href = t.href; }} className="flex-1 flex flex-col items-center py-2.5 gap-0.5 cursor-pointer transition-colors bg-transparent border-none">
+                <button key={t.key} onClick={() => handleTabClick(t.key, t.href)} className="flex-1 flex flex-col items-center py-2.5 gap-0.5 cursor-pointer transition-colors bg-transparent border-none">
                   <Icon size={21} style={{ color: isActive ? "#3b82f6" : "#475569" }} />
                   <span className="text-[9px] font-semibold" style={{ color: isActive ? "#3b82f6" : "#475569" }}>{t.label}</span>
                 </button>

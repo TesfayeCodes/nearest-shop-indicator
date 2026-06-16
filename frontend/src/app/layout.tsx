@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast"; // toast notifications
 
 export const metadata: Metadata = {
   title: "NearShop — Find Shops Near You, Instantly",
@@ -33,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="font-inter antialiased">{children}</body>
+      <body className="font-inter antialiased"><ToastProvider>{children}</ToastProvider></body>
     </html>
   );
 }

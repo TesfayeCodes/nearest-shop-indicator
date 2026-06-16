@@ -7,11 +7,45 @@ import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { shopsApi } from "@/services/shops";
 import { usersApi, type UserAdminResponse } from "@/services/users";
+import { useToast } from "@/components/ui/toast";
 
 export default function AdminPage() {
   const [totalShops, setTotalShops] = useState(0);
   const [users, setUsers] = useState<UserAdminResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddShop, setShowAddShop] = useState(false); // toggle add shop form
+  const [newShop, setNewShop] = useState({ name: "", lat: "9.03", lng: "38.74", category: "" });
+  const { toast } = useToast();
+
+  // handle adding a new shop
+  const handleAddShop = async () => {
+    if (!newShop.name) { toast("Shop name is required", "error"); return; }
+    try {
+      await shopsApi.create({
+        name: newShop.name,
+        latitude: parseFloat(newShop.lat),
+        longitude: parseFloat(newShop.lng),
+        category_slug: newShop.category || undefined,
+      });
+      toast("Shop added successfully!", "success");
+      setShowAddShop(false);
+      setNewShop({ name: "", lat: "9.03", lng: "38.74", category: "" });
+    } catch (err) {
+      toast("Failed to add shop", "error");
+    }
+  };
+
+  // handle deleting user (deactivate)
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm("Are you sure you want to deactivate this user?")) return;
+    try {
+      await usersApi.deactivate(userId);
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      toast("User deactivated", "success");
+    } catch {
+      toast("Failed to deactivate user", "error");
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +83,22 @@ export default function AdminPage() {
               <h1 className="text-[22px] font-extrabold tracking-tight">Admin Panel</h1>
               <p className="text-[13px] text-text2 mt-0.5">Platform management & analytics</p>
             </div>
-            <button className="btn-primary text-xs"><IconPlus size={14} /> Add Shop</button>
+            <button onClick={() => setShowAddShop(!showAddShop)} className="btn-primary text-xs"><IconPlus size={14} /> {showAddShop ? "Cancel" : "Add Shop"}</button>
           </div>
+
+          {/* Add Shop Form - simple inline form */}
+          {showAddShop && (
+            <div className="rounded-2xl p-5 flex flex-col gap-3" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <h3 className="text-sm font-bold">Add New Shop</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <input type="text" placeholder="Shop name" value={newShop.name} onChange={e => setNewShop({...newShop, name: e.target.value})} className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.07)] rounded-lg px-3 py-2 text-sm text-white outline-none" />
+                <input type="text" placeholder="Category slug" value={newShop.category} onChange={e => setNewShop({...newShop, category: e.target.value})} className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.07)] rounded-lg px-3 py-2 text-sm text-white outline-none" />
+                <input type="text" placeholder="Latitude" value={newShop.lat} onChange={e => setNewShop({...newShop, lat: e.target.value})} className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.07)] rounded-lg px-3 py-2 text-sm text-white outline-none" />
+                <input type="text" placeholder="Longitude" value={newShop.lng} onChange={e => setNewShop({...newShop, lng: e.target.value})} className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.07)] rounded-lg px-3 py-2 text-sm text-white outline-none" />
+              </div>
+              <button onClick={handleAddShop} className="btn-primary text-xs self-start">Save Shop</button>
+            </div>
+          )}
 
           <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
             {stats.map((m) => (
@@ -130,8 +178,8 @@ export default function AdminPage() {
                           </td>
                           <td className="px-4 py-2.5">
                             <div className="flex gap-1.5">
-                              <button className="w-8 h-8 rounded-lg border-none bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm hover:bg-white/5"><IconEdit size={14} style={{ color: "#60a5fa" }} /></button>
-                              <button className="w-8 h-8 rounded-lg border-none bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm hover:bg-white/5"><IconTrash size={14} style={{ color: "#fca5a5" }} /></button>
+                              <button onClick={() => toast("Edit user coming soon", "info")} className="w-8 h-8 rounded-lg border-none bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm hover:bg-white/5"><IconEdit size={14} style={{ color: "#60a5fa" }} /></button>
+                              <button onClick={() => handleDeleteUser(u.id)} className="w-8 h-8 rounded-lg border-none bg-transparent text-text2 cursor-pointer flex items-center justify-center text-sm hover:bg-white/5"><IconTrash size={14} style={{ color: "#fca5a5" }} /></button>
                             </div>
                           </td>
                         </tr>

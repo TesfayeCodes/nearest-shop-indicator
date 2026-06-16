@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#070c1a"/>
+  <rect x="40" y="40" width="432" height="432" rx="76" fill="url(#g)" opacity="0.12"/>
+  <path d="M256 120c-46 0-83 37-83 83 0 62 83 154 83 154s83-92 83-154c0-46-37-83-83-83zm0 112c-16 0-29-13-29-29s13-29 29-29 29 13 29 29-13 29-29 29z" fill="#3b82f6"/>
+  <circle cx="256" cy="203" r="18" fill="#10b981"/>
+  <circle cx="256" cy="203" r="34" fill="none" stroke="#10b981" stroke-width="3" opacity="0.4"/>
+  <text x="256" y="380" text-anchor="middle" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="#f8fafc">Near</text>
+  <text x="256" y="420" text-anchor="middle" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="#3b82f6">Shop</text>
+</svg>

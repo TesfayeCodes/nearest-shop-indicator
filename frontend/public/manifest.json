@@ -1,0 +1,26 @@
+{
+  "name": "NearShop — Find Shops Near You",
+  "short_name": "NearShop",
+  "description": "Real-time shop discovery powered by GPS. Navigate, explore, and find exactly what you need in seconds.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070c1a",
+  "theme_color": "#070c1a",
+  "orientation": "portrait-primary",
+  "categories": ["navigation", "lifestyle", "shopping"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/landing.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "NearShop Landing Page"
+    }
+  ]
+}

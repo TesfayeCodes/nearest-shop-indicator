@@ -16,7 +16,10 @@ import {
   IconDeviceMobile,
   IconGridDots,
 } from "@tabler/icons-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/toast";
 
 const features = [
   { icon: IconCurrentLocation, color: "#3b82f6", bg: "rgba(59,130,246,0.12)", title: "Real-time GPS", desc: "Pinpoint your location and discover shops within walking distance, updated live as you move." },
@@ -48,6 +51,16 @@ const pins = [
 ];
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/shops?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -70,8 +83,8 @@ export default function LandingPage() {
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="max-w-[520px] mx-auto mt-10 flex items-center gap-3 px-4.5 py-1.5 rounded-2xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(16px)" }}>
             <IconSearch size={19} style={{ color: "#475569" }} />
-            <input type="text" placeholder="Search shops, cafes, pharmacies..." className="flex-1 bg-transparent border-none outline-none text-sm text-text font-inherit placeholder:text-text3" />
-            <button className="px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white border-none cursor-pointer whitespace-nowrap" style={{ background: "#3b82f6" }}>Search</button>
+            <input type="text" placeholder="Search shops, cafes, pharmacies..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="flex-1 bg-transparent border-none outline-none text-sm text-text font-inherit placeholder:text-text3" />
+            <button onClick={handleSearch} className="px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white border-none cursor-pointer whitespace-nowrap" style={{ background: "#3b82f6" }}>Search</button>
           </motion.div>
         </section>
 
@@ -141,7 +154,7 @@ export default function LandingPage() {
           <h2 className="text-[clamp(1.5rem,3vw,2.2rem)] font-extrabold leading-tight tracking-tight mb-7">Browse by category</h2>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(95px,1fr))] gap-2.5">
             {categories.map((c, i) => (
-              <motion.div key={c.label} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} className="p-4 text-center rounded-2xl cursor-pointer transition-all duration-250" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <motion.div key={c.label} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} onClick={() => router.push(`/shops?category=${c.label.toLowerCase()}`)} className="p-4 text-center rounded-2xl cursor-pointer transition-all duration-250" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <div className="text-2xl mb-1.5">{c.emoji}</div>
                 <div className="text-[11px] font-semibold text-text2">{c.label}</div>
               </motion.div>
