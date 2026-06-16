@@ -84,8 +84,30 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                Signing in...
+              </span>
+            ) : "Sign In"}
           </button>
+
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }} />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3" style={{ background: "rgba(11,17,32,0.8)", color: "#475569" }}>or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2.5">
+            {["Google", "GitHub", "Twitter"].map((provider) => (
+              <button key={provider} type="button" className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-colors" style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.07)", color: "#94a3b8" }}>
+                {provider}
+              </button>
+            ))}
+          </div>
         </form>
 
         <p className="text-xs text-text2 text-center mt-6">

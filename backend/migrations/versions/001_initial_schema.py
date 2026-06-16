@@ -77,9 +77,7 @@ def upgrade() -> None:
         sa.Column("longitude", sa.Float(), nullable=False),
         sa.Column(
             "location",
-            geoalchemy2.types.Geography(
-                geometry_type="POINT", srid=4326, from_text="ST_GeogFromText"
-            ),
+            geoalchemy2.types.Geometry(geometry_type="POINT", srid=4326),
             nullable=True,
         ),
         sa.Column("address", sa.String(), nullable=True),
@@ -111,8 +109,8 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_shops_id"), "shops", ["id"], unique=False)
-    op.create_index(
-        "idx_shops_location", "shops", ["location"], postgresql_using="gist"
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS idx_shops_location ON shops USING gist (location)"
     )
 
     op.create_table(

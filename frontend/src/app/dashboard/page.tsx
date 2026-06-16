@@ -199,7 +199,7 @@ export default function DashboardPage() {
                     <div className="p-5 text-xs text-text2 text-center">No shops found nearby</div>
                   ) : (
                     filtered.map((s) => (
-                      <ShopCard key={s.id} shop={s} onSelect={setSelectedShop} />
+                      <ShopCard key={s.id} shop={s} onSelect={setSelectedShop} selected={selectedShop?.id === s.id} />
                     ))
                   )}
                 </div>

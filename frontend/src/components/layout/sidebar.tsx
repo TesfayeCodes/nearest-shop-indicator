@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   IconLayoutDashboard,
   IconMap,
@@ -16,6 +17,8 @@ import {
   IconUsers,
   IconChecklist,
   IconFileText,
+  IconChevronLeft,
+  IconChevronRight,
 } from "@tabler/icons-react";
 
 interface SidebarLink {
@@ -63,23 +66,34 @@ interface SidebarProps {
 
 export default function Sidebar({ variant = "user" }: SidebarProps) {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
   const links = variant === "admin" ? adminLinks : mainLinks;
   const bottomLinks = variant === "admin" ? systemLinks : accountLinks;
   const secondaryLinks = variant === "admin" ? [] : exploreLinks;
 
   return (
     <aside
-      className="w-side flex-shrink-0 fixed top-nav bottom-0 left-0 z-50 overflow-y-auto flex flex-col gap-0.5 p-5 px-3"
+      className={`${collapsed ? "w-[70px]" : "w-side"} flex-shrink-0 fixed top-nav bottom-0 left-0 z-50 overflow-y-auto flex flex-col gap-0.5 p-5 px-3 transition-all duration-300 hidden md:flex`}
       style={{
-        background: "#0b1120",
+        background: "rgba(11,17,32,0.95)",
         borderRight: "1px solid rgba(255,255,255,0.07)",
+        backdropFilter: "blur(12px)",
       }}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-2.5 pb-1"
-        style={{ color: "#475569" }}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute top-3 -right-3 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer z-10"
+        style={{ background: "#0b1120", border: "1px solid rgba(255,255,255,0.07)", color: "#94a3b8" }}
       >
-        {variant === "admin" ? "Admin" : "Main"}
-      </div>
+        {collapsed ? <IconChevronRight size={12} /> : <IconChevronLeft size={12} />}
+      </button>
+
+      {!collapsed && (
+        <div className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-2.5 pb-1" style={{ color: "#475569" }}>
+          {variant === "admin" ? "Admin" : "Main"}
+        </div>
+      )}
+
       {links.map((l) => {
         const Icon = l.icon;
         const isActive = pathname === l.href;
@@ -87,107 +101,78 @@ export default function Sidebar({ variant = "user" }: SidebarProps) {
           <Link
             key={l.label}
             href={l.href}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium no-underline transition-colors duration-200"
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium no-underline transition-all duration-200 ${collapsed ? "justify-center" : ""}`}
             style={{
               color: isActive ? "#3b82f6" : "#94a3b8",
               background: isActive ? "rgba(59,130,246,.1)" : "transparent",
-              fontWeight: isActive ? 600 : 500,
             }}
+            title={collapsed ? l.label : undefined}
           >
-            <Icon size={17} />
-            {l.label}
-            {l.badge && (
-              <span
-                className="ml-auto text-[10px] font-bold px-[7px] py-[1px] rounded-full min-w-[18px] text-center text-white"
-                style={{ background: l.amber ? "#f59e0b" : "#3b82f6" }}
-              >
-                {l.badge}
-              </span>
+            <Icon size={18} />
+            {!collapsed && (
+              <>
+                {l.label}
+                {l.badge && (
+                  <span className="ml-auto text-[10px] font-bold px-[7px] py-[1px] rounded-full min-w-[18px] text-center text-white" style={{ background: l.amber ? "#f59e0b" : "#3b82f6" }}>
+                    {l.badge}
+                  </span>
+                )}
+              </>
             )}
           </Link>
         );
       })}
 
-      {secondaryLinks.length > 0 && (
+      {!collapsed && secondaryLinks.length > 0 && (
         <>
-          <div className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-5 pb-1"
-            style={{ color: "#475569" }}
-          >
-            Explore
-          </div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-5 pb-1" style={{ color: "#475569" }}>Explore</div>
           {secondaryLinks.map((l) => {
             const Icon = l.icon;
             return (
-              <Link
-                key={l.label}
-                href={l.href}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium no-underline transition-colors duration-200"
-                style={{ color: "#94a3b8" }}
-              >
-                <Icon size={17} />
-                {l.label}
+              <Link key={l.label} href={l.href} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium no-underline transition-colors" style={{ color: "#94a3b8" }}>
+                <Icon size={17} /> {l.label}
               </Link>
             );
           })}
         </>
       )}
 
-      <>
-        <div className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-5 pb-1"
-          style={{ color: "#475569" }}
-        >
-          {variant === "admin" ? "System" : "Account"}
-        </div>
-        {bottomLinks.map((l) => {
-          const Icon = l.icon;
-          return (
-            <Link
-              key={l.label}
-              href={l.href}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium no-underline transition-colors duration-200"
-              style={{ color: "#94a3b8" }}
-            >
-              <Icon size={17} />
-              {l.label}
-              {l.badge && (
-                <span
-                  className="ml-auto text-[10px] font-bold px-[7px] py-[1px] rounded-full min-w-[18px] text-center text-white"
-                style={{ background: l.amber ? "#f59e0b" : "#3b82f6" }}
-                >
-                  {l.badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </>
+      {!collapsed && (
+        <>
+          <div className="text-[10px] font-semibold uppercase tracking-widest px-3 pt-5 pb-1" style={{ color: "#475569" }}>
+            {variant === "admin" ? "System" : "Account"}
+          </div>
+          {bottomLinks.map((l) => {
+            const Icon = l.icon;
+            return (
+              <Link key={l.label} href={l.href} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium no-underline transition-colors" style={{ color: "#94a3b8" }}>
+                <Icon size={17} /> {l.label}
+                {l.badge && (
+                  <span className="ml-auto text-[10px] font-bold px-[7px] py-[1px] rounded-full min-w-[18px] text-center text-white" style={{ background: l.amber ? "#f59e0b" : "#3b82f6" }}>
+                    {l.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </>
+      )}
 
-      <div className="mt-auto pt-4">
-        <div
-          className="flex items-center gap-2.5 p-3 rounded-xl"
-          style={{
-            background: "rgba(255,255,255,0.035)",
-            border: "1px solid rgba(255,255,255,0.07)",
-          }}
-        >
-          <div
-            className="w-[34px] h-[34px] rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold"
-            style={{
-              background: "linear-gradient(135deg,#3b82f6,#10b981)",
-            }}
-          >
-            {variant === "admin" ? "AD" : "AK"}
-          </div>
-          <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-text">
-              {variant === "admin" ? "Admin" : "Abebe K."}
+      {!collapsed && (
+        <div className="mt-auto pt-4">
+          <div className="flex items-center gap-2.5 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <div className="w-[34px] h-[34px] rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold" style={{ background: "linear-gradient(135deg,#3b82f6,#10b981)" }}>
+              {variant === "admin" ? "AD" : "AK"}
             </div>
-            <div className="text-[11px]" style={{ color: variant === "admin" ? "#fcd34d" : "#60a5fa" }}>
-              {variant === "admin" ? "Super Admin" : "Pro Plan"}
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-[#f8fafc]">{variant === "admin" ? "Admin" : "Abebe K."}</div>
+              <div className="text-[11px]" style={{ color: variant === "admin" ? "#fcd34d" : "#60a5fa" }}>
+                {variant === "admin" ? "Super Admin" : "Pro Plan"}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

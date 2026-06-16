@@ -149,6 +149,53 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Testimonials */}
+        <section className="section-wrap pb-20">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-widest mb-4" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", color: "#fcd34d" }}>
+            <IconStar size={14} /> Testimonials
+          </motion.div>
+          <h2 className="text-[clamp(1.5rem,3vw,2.2rem)] font-extrabold leading-tight tracking-tight mb-2.5">Loved by thousands</h2>
+          <p className="text-text2 text-base leading-relaxed max-w-[480px] mb-10">See what our users say about finding shops with NearShop.</p>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+            {[
+              { name: "Sara T.", role: "Regular User", avatar: "ST", text: "Found a pharmacy open at 11 PM near my hotel. This app saved me! The GPS is accurate and the interface is beautiful.", rating: 5 },
+              { name: "Mark W.", role: "Travel Blogger", avatar: "MW", text: "I travel to 3 cities a week. NearShop helps me find great cafes and restaurants wherever I land. Indispensable tool.", rating: 5 },
+              { name: "Helen G.", role: "Local Guide", avatar: "HG", text: "I've added 50+ shops to the platform. The review system is fair and the community is growing fast. Love the direction!", rating: 5 },
+            ].map((t, i) => (
+              <motion.div key={t.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="card-base p-6 cursor-default">
+                <div className="flex gap-0.5 mb-3" style={{ color: "#fbbf24" }}>
+                  {Array.from({ length: t.rating }).map((_, j) => (
+                    <IconStar key={j} size={14} fill="#fbbf24" color="#fbbf24" />
+                  ))}
+                </div>
+                <p className="text-[13px] text-text2 leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg,#3b82f6,#10b981)" }}>{t.avatar}</div>
+                  <div>
+                    <div className="text-[13px] font-bold">{t.name}</div>
+                    <div className="text-[11px] text-text2">{t.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="section-wrap pb-20">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-3xl p-10 md:p-14 text-center relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(16,185,129,0.08) 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <div className="absolute inset-0 bg-grid opacity-30" />
+            <div className="relative z-10">
+              <h2 className="text-[clamp(1.5rem,3vw,2.2rem)] font-extrabold leading-tight tracking-tight mb-3">Ready to explore?</h2>
+              <p className="text-text2 text-base max-w-[440px] mx-auto mb-7">Join thousands discovering new shops every day. Start finding what&apos;s near you right now.</p>
+              <div className="flex gap-3 justify-center flex-wrap">
+                <Link href="/dashboard" className="btn-primary no-underline"><IconCurrentLocation size={18} /> Get Started</Link>
+                <Link href="/map" className="btn-secondary no-underline"><IconMap size={18} /> Explore Map</Link>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
         <Footer />
       </div>
     </>
